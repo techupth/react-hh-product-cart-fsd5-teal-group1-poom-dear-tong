@@ -1,37 +1,107 @@
+import { useState } from "react";
 import "./App.css";
-
+import products from "./data/products";
 function App() {
+  const [displayProduct, setDisplayProduct] = useState([...products]);
+  const [cart, setCart] = useState([]);
+  function handleAddToCart(index) {
+    const newProductInCart = displayProduct[index];
+    newProductInCart.quantity
+      ? (newProductInCart.quantity += 1)
+      : (newProductInCart.quantity = 1);
+    cart.includes(newProductInCart)
+      ? setCart([...cart])
+      : setCart([...cart, newProductInCart]);
+  }
+
+  function handleAddQuantity(index) {
+    const productInCart = [...cart];
+    productInCart[index].quantity += 1;
+    setCart([...productInCart]);
+  }
+  function handleSubtractQuantity(index) {
+    const productInCart = [...cart];
+    if (productInCart[index].quantity === 1) {
+      handleRemove(index);
+    } else {
+      productInCart[index].quantity -= 1;
+      setCart([...productInCart]);
+    }
+  }
+  function handleRemove(index) {
+    const productInCart = [...cart];
+    productInCart[index].quantity = 0;
+    setCart(productInCart.filter((_, i) => i !== index));
+  }
   return (
     <div className="App">
       <section className="product-container">
         <h1 className="product-heading">Products</h1>
         <div className="product-list">
-          <div className="product">
-            <img
-              src="http://dummyimage.com/350x350.png/dddddd/000000"
-              alt="sample name"
-            />
-            <h2>Sample name</h2>
-            <p>Sample desc</p>
-            <button>Add to cart</button>
-          </div>
+          {displayProduct.map((item, index) => {
+            return (
+              <div className="product" key={index}>
+                <img src={item.image} alt={item.name} />
+                <h2>{item.name}</h2>
+                <p>{item.description}</p>
+                <button
+                  onClick={() => {
+                    handleAddToCart(index);
+                  }}
+                >
+                  Add to cart
+                </button>
+              </div>
+            );
+          })}
         </div>
       </section>
       <hr />
 
       <section className="cart">
-        <h1 className="cart-heading">Cart (Total Price is x Baht)</h1>
+        <h1 className="cart-heading">
+          Cart (Total Price is{" "}
+          {cart.reduce((acc, curr) => {
+            return (acc += curr.price * curr.quantity);
+          }, 0)}{" "}
+          Baht)
+        </h1>
         <div className="cart-item-list">
-          <div className="cart-item">
-            <h1>Item name: Fond - Neutral</h1>
-            <h2>Price: 160 Baht</h2>
-            <h2>Quantity: 2</h2>
-            <button className="delete-button">x</button>
-            <div className="quantity-actions">
-              <button className="add-quantity">+</button>
-              <button className="subtract-quantity">-</button>
-            </div>
-          </div>
+          {cart.map((item, index) => {
+            return (
+              <div className="cart-item" key={index}>
+                <h1>Item name: {item.name}</h1>
+                <h2>Price: {item.price} Baht</h2>
+                <h2>Quantity: {item.quantity}</h2>
+                <button
+                  className="delete-button"
+                  onClick={() => {
+                    handleRemove(index);
+                  }}
+                >
+                  x
+                </button>
+                <div className="quantity-actions">
+                  <button
+                    className="add-quantity"
+                    onClick={() => {
+                      handleAddQuantity(index);
+                    }}
+                  >
+                    +
+                  </button>
+                  <button
+                    className="subtract-quantity"
+                    onClick={() => {
+                      handleSubtractQuantity(index);
+                    }}
+                  >
+                    -
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
